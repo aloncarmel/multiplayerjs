@@ -17,8 +17,33 @@ var multiplayerjs = {
         //This will initialize the multiplayer experience on page
 
         //Append some styling to page
-        $('head').append('<style> .pointer {height:15px;width:15px;border-radius:100px;position:absolute;z-index:99999;opacity:0.5} </style>');
+        $('head').append('<style> \
+        .pointer {\
+            height:15px;\
+            width:15px;\
+            border-radius:100px;\
+            position:absolute;\
+            z-index:99999;\
+            opacity:0.5\
+        } \
+        .players {\
+            padding: 7px;\
+            border-radius: 3px;\
+            color: lightgrey;\
+            position: absolute;\
+            bottom: 10px;\
+            right: 10px;\
+            background-color:rgba(42,40,57,1);\
+        }\
+        .player {\
+            font-size: 14px;\
+            font-family: sans-serif;\
+        }\
+        </style>');
 
+
+        $('body').append('<div class="players"></div>');
+        
         firebase.initializeApp(this.config);
 
         //TODO handle query params or any changes to url so we wont create multiple session urls by mistake
@@ -27,25 +52,35 @@ var multiplayerjs = {
         //Init the multiplayerme user into localstorage so its consistant
 
         this.setMultiplayerMe();
-        var me = this.getMultiplayerMe();
-
-        this.announcePlayer(me.color,me.id,me.name);
-
-        //Broadcast the mouse position with cursor;
+        this.announcePlayer();
+        
+        //Broadcast the mouse position with cursor
         $(document).mousemove(function( event ) {
-            _self.tellPlayerPos(event,me.id);
+            _self.tellPlayerPos(event);
         });
         
         //Listen to updates in pointers and move the pointer div to recieved broadcasted position
         var players = firebase.database().ref('sessions/'+this.config.currentpageslug).child('players');
+
         players.on('child_added',function(snapshot) {
         
             //New pointer is announced and appended to body;
             var pointerhtml = '<div id="pointer'+snapshot.val().id+'" class="pointer"></div>';
             $('body').append(pointerhtml);
             $('#pointer'+snapshot.val().id).css('background-color',snapshot.val().color);    
+            console.log(snapshot.val());
+            $('.players').append('<span style="color:'+snapshot.val().color+'" id="'+snapshot.val().id+'" class="player">'+snapshot.val().name+'</span>, ')
+
+        });
+
+        players.on('child_removed',function(snapshot) {
+        
+            //Pointer is removed from db and has left
+            $('#'+snapshot.val().id).remove();
+            $('#pointer'+snapshot.val().id).remove();
         
         });
+
 
         players.on('value', function(snapshot) {
         
@@ -60,18 +95,20 @@ var multiplayerjs = {
             })
             
         });
-
-        window.addEventListener('beforeunload', function (e) { 
-            e.preventDefault(); 
-            //Remove pointers when user leaves
-            this.removeMe();
-            e.returnValue = ''; 
-        }); 
+        $(window).blur(function(){
+            //Left focus
+            _self.removeMe();
+        });
+        $(window).focus(function(){
+            //back in focus
+            _self.announcePlayer();
+        });
 
     },
     removeMe: function() {
         //Remove the current user from pointer and user lists
-        firebase.database().ref('sessions/'+this.config.currentpageslug).child('players').child(id).removeValue();
+        var me = this.getMultiplayerMe();
+        firebase.database().ref('sessions/'+this.config.currentpageslug).child('players').child(me.id).remove();
     },
     playdatabase: function(db){
         return db;
@@ -112,15 +149,18 @@ var multiplayerjs = {
     getRandomInt(min, max) {
         return Math.floor(Math.random() * (max - min)) + min;
     },
-    announcePlayer(color,id,name) {
-        firebase.database().ref('sessions').child(this.config.currentpageslug).child('players').child(id).set({
-            id:id,
-            name: name,
-            color:'#'+color
+    announcePlayer() {
+        var me = this.getMultiplayerMe();
+        console.log(me);
+        firebase.database().ref('sessions').child(this.config.currentpageslug).child('players').child(me.id).set({
+            id:me.id,
+            name: me.name,
+            color:'#'+me.color
           });
     },
-    tellPlayerPos(p,id){
-        firebase.database().ref('sessions').child(this.config.currentpageslug).child('players').child(id).update({
+    tellPlayerPos(p){
+        var me = this.getMultiplayerMe();
+        firebase.database().ref('sessions').child(this.config.currentpageslug).child('players').child(me.id).update({
            x:p.pageX,
            y:p.pageY
          });
