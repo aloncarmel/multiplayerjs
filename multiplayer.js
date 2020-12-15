@@ -8,7 +8,7 @@
 
 var multiplayerjs = {
     config: {
-        databaseURL: 'https://multiplayertest-28af0-default-rtdb.firebaseio.com/',
+        databaseURL: 'https://CHANGEME.firebaseio.com/',
         currentpageslug:''
     },
     play: function () {
