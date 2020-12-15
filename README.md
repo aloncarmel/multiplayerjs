@@ -8,6 +8,11 @@ A Multiplayer JS Library using Firebase to add Figma/Miro like multiplayer exper
 * Commenting on page, comment saved based on X,Y where the user has add the comment with simple textbox 
 * Added connected users (Random username and color generated) to the bottom right side whenever a user joins page
 
+## How to get start?
+* Add the required libraries mentioned below
+* Add the multiplayer.js to your page
+* Initialize the library using multiplayer.init(), thats it!
+
 ## Requirements
 * Active public firebase account and base url open for anonymous write event
 * Firebase SDK loaded on page succesfully
