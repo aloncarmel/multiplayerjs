@@ -101,7 +101,7 @@ var multiplayerjs = {
         });
         $(window).focus(function(){
             //back in focus
-            _self.announcePlayer();
+            location.reload();
         });
 
     },
@@ -146,10 +146,10 @@ var multiplayerjs = {
     capFirst(string) {
         return string.charAt(0).toUpperCase() + string.slice(1);
     },
-    getRandomInt(min, max) {
+    getRandomInt: function(min, max) {
         return Math.floor(Math.random() * (max - min)) + min;
     },
-    announcePlayer() {
+    announcePlayer: function() {
         var me = this.getMultiplayerMe();
         console.log(me);
         firebase.database().ref('sessions').child(this.config.currentpageslug).child('players').child(me.id).set({
@@ -158,7 +158,7 @@ var multiplayerjs = {
             color:'#'+me.color
           });
     },
-    tellPlayerPos(p){
+    tellPlayerPos: function(p){
         var me = this.getMultiplayerMe();
         firebase.database().ref('sessions').child(this.config.currentpageslug).child('players').child(me.id).update({
            x:p.pageX,
@@ -166,4 +166,12 @@ var multiplayerjs = {
          });
        
     },
+    addCommentInPosition(p,text) {
+        var me = this.getMultiplayerMe();
+        firebase.database().ref('sessions').child(this.config.currentpageslug).child('comments').push({
+           x:p.pageX,
+           y:p.pageY,
+           comment:text
+         });
+    }
 };
