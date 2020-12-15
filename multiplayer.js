@@ -1,74 +1,86 @@
+/* 
+    Name: Multiplayer.JS
+    Description: multiplayerjs is a library which adds figma/miro like multiplayer experience to any page its loaded on giving you ability to add instant collaboration on page
+    Author: Alon Carmel
+    URI: https://github.com/aloncarmel/multiplayerjs
+    Year: 2020
+*/
+
 var multiplayerjs = {
     config: {
-        databaseURL: 'https://CHANGEME.firebaseio.com',
+        databaseURL: 'https://multiplayertest-28af0-default-rtdb.firebaseio.com/',
+        currentpageslug:''
     },
-    init: function () {
+    play: function () {
 
+        var _self = this;
         //This will initialize the multiplayer experience on page
 
-        // Set the configuration for your app
+        //Append some styling to page
+        $('head').append('<style> .pointer {height:15px;width:15px;border-radius:100px;position:absolute;z-index:99999;opacity:0.5} </style>');
 
-        $.noConflict();
-        jQuery( document ).ready(function( $ ) {
-          
-            //Append some styling to page
-            $('head').append('<style> .pointer {height:15px;width:15px;border-radius:100px;position:absolute;z-index:99999;} </style>');
+        firebase.initializeApp(this.config);
 
-            firebase.initializeApp(this.config);
+        //TODO handle query params or any changes to url so we wont create multiple session urls by mistake
+        var currentpageslug = window.location.pathname.replace(/\//g,'');
+        this.config.currentpageslug = currentpageslug.replace('.','');
+        //Init the multiplayerme user into localstorage so its consistant
 
-            //TODO handle query params or any changes to url so we wont create multiple session urls by mistake
-            var currentpageslug = window.location.pathname.replace(/\//g,'');
+        this.setMultiplayerMe();
+        var me = this.getMultiplayerMe();
 
-            //Init the multiplayerme user into localstorage so its consistant
-
-            this.setMultiplayerMe();
-            var me = this.getMultiplayerMe();
-
-            // Get a reference to the database service
-            var database = firebase.database().ref('/sessions/'+currentpageslug);
-            
-            //Broadcast the mouse position with cursor;
-            jQuery(document).mousemove(function( event ) {
-                this.tellPos(event,me.color,me.id,me.name);
-            });
-            
-            //Listen to updates in pointers and move the pointer div to recieved broadcasted position
-            var pointers = firebase.database().ref('pointers');
-            pointers.on('child_added',function(snapshot) {
-            
-                //New pointer is announced and appended to body;
-                var pointerhtml = '<div id="pointer'+snapshot.val().id+'" class="pointer"></div>';
-                jQuery('body').append(pointerhtml);
-                jQuery('#pointer'+snapshot.val().id).css('background-color',snapshot.val().color);    
-            
-            });
-
-            pointers.on('value', function(snapshot) {
-            
-                snapshot.forEach(function(pointer) {
-                    jQuery("#pointer"+pointer.val().id)
-                            .css({
-                                position: 'absolute',
-                                left: pointer.val().x,
-                                top: pointer.val().y,
-                                display: 'block'
-                            })
-                })
-                
-            });
-
-
+        
+        //Broadcast the mouse position with cursor;
+        $(document).mousemove(function( event ) {
+            _self.tellPos(event,me.color,me.id,me.name);
+            _self.tellActiveUser(me.color,me.id,me.name);
+        });
+        
+        //Listen to updates in pointers and move the pointer div to recieved broadcasted position
+        var pointers = firebase.database().ref('sessions/'+this.config.currentpageslug+'/pointers');
+        pointers.on('child_added',function(snapshot) {
+        
+            //New pointer is announced and appended to body;
+            var pointerhtml = '<div id="pointer'+snapshot.val().id+'" class="pointer"></div>';
+            $('body').append(pointerhtml);
+            $('#pointer'+snapshot.val().id).css('background-color',snapshot.val().color);    
+        
         });
 
+        pointers.on('value', function(snapshot) {
+        
+            snapshot.forEach(function(pointer) {
+                $("#pointer"+pointer.val().id)
+                        .css({
+                            position: 'absolute',
+                            left: pointer.val().x,
+                            top: pointer.val().y,
+                            display: 'block'
+                        })
+            })
+            
+        });
 
+        window.addEventListener('beforeunload', function (e) { 
+            e.preventDefault(); 
+            //Remove pointers when user leaves
+            e.returnValue = ''; 
+        }); 
 
     },
+    playdatabase: function(db){
+        return db;
+    },
     setMultiplayerMe: function() {
-        localStorage.setItem('multiplayerme', JSON.stringify({
-            name: this.getRandomName(),
-            id: this.getRandomId(),
-            color: this.getRandomColor()
-        }));
+        if(!localStorage.getItem('multiplayerme')) {
+            localStorage.setItem('multiplayerme', JSON.stringify({
+                name: this.getRandomName(),
+                id: this.getRandomId(),
+                color: this.getRandomColor()
+            }));
+        } else {
+            this.getMultiplayerMe();
+        }
     },
     getMultiplayerMe: function() {
         var retrievedObject = localStorage.getItem('multiplayerme');
@@ -95,16 +107,15 @@ var multiplayerjs = {
     getRandomInt(min, max) {
         return Math.floor(Math.random() * (max - min)) + min;
     },
-    tellActiveUser(name,id) {
-        firebase.database().ref('users/' + id).set({
+    tellActiveUser(color,id,name) {
+        firebase.database().ref('sessions/'+this.config.currentpageslug+'/users/' + id).set({
             id:id,
             name: name,
             color:'#'+color
           });
     },
     tellPos(p,color,id,name){
-
-        firebase.database().ref('pointers/' + id).set({
+        firebase.database().ref('sessions/'+this.config.currentpageslug+'/pointers/' + id).set({
            id:id,
            color: '#'+color,
            name: name,
@@ -114,5 +125,3 @@ var multiplayerjs = {
        
     },
 };
-
-multiplayerjs.init();

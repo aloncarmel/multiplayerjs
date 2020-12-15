@@ -1,0 +1,28 @@
+
+<!DOCTYPE html>
+<html lang='en' class=''>
+<head>
+  <meta charset='UTF-8'>
+  <title>Multiplayer demo</title>
+  <meta name="robots" content="noindex">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/7.17.2/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/7.17.2/firebase-firestore.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/7.17.2/firebase-database.js"></script>
+  <script src="multiplayer.js"></script>
+</head>
+
+<body>
+  
+    <center>
+        <h1>This is a simple demo, once page is loaded you should see a random name being added to the bottom right side of your screen, this is you, once people join the same page you will see more names being added and cursors appearing on page as a random colored circle.</h1>
+    </center>
+
+    <script>
+        $(document).ready(function() {
+            multiplayerjs.play();
+        });
+    </script>
+</body>
+
+</html>
