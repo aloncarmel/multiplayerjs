@@ -19,13 +19,27 @@ var multiplayerjs = {
         //Append some styling to page
         $('head').append('<style> \
         .pointer {\
-            height:15px;\
-            width:15px;\
-            border-radius:100px;\
+            height:20px;\
+            display:block;\
+            border-radius:15px;\
             position:absolute;\
             z-index:99999;\
-            opacity:0.5\
+            opacity:0.9;\
+            padding-right:10px;\
+            padding-left:10px;\
+            padding-top:3px;\
+            padding-bottom:5px;\
+            -webkit-box-shadow: 0px 0px 15px 5px rgba(0,0,0,0.30);\
+            -moz-box-shadow: 0px 0px 15px 5px rgba(0,0,0,0.30);\
+            box-shadow: 0px 0px 15px 5px rgba(0,0,0,0.30); \
+            border:1px solid rgba(42,40,57,0.2);\
+            margin-left:20px;\
+            cursor:none;\
         } \
+        .playername {\
+            font-size:12px;\
+            font-family: sans-serif;\
+        }\
         .players {\
             padding: 7px;\
             border-radius: 3px;\
@@ -34,6 +48,16 @@ var multiplayerjs = {
             bottom: 10px;\
             right: 10px;\
             background-color:rgba(42,40,57,1);\
+            -webkit-box-shadow: 0px 0px 15px 5px rgba(0,0,0,0.30);\
+            -moz-box-shadow: 0px 0px 15px 5px rgba(0,0,0,0.30);\
+            box-shadow: 0px 0px 15px 5px rgba(0,0,0,0.30); \
+        }\
+        .pointercursor {\
+            width:25px;\
+            height:25px;\
+            position:absolute;\
+            left:-20px;\
+            top:-10px;\
         }\
         .player {\
             font-size: 14px;\
@@ -63,9 +87,17 @@ var multiplayerjs = {
         var players = firebase.database().ref('sessions/'+this.config.currentpageslug).child('players');
 
         players.on('child_added',function(snapshot) {
-        
+            let me = _self.getMultiplayerMe();
             //New pointer is announced and appended to body;
-            var pointerhtml = '<div id="pointer'+snapshot.val().id+'" class="pointer"></div>';
+          
+            if(snapshot.val().id == me.id) {
+
+                var pointerhtml = '<div id="pointer'+snapshot.val().id+'" class="pointer"><span class="playername">'+snapshot.val().name+'</span></div>';
+
+            } else {
+                var pointerhtml = '<div id="pointer'+snapshot.val().id+'" class="pointer"><span class="playername"><div class="pointercursor"><svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 28 28" enable-background="new 0 0 28 28" xml:space="preserve"><polygon fill="#FFFFFF" points="8.2,20.9 8.2,4.9 19.8,16.5 13,16.5 12.6,16.6 "/><polygon points="9.2,7.3 9.2,18.5 12.2,15.6 12.6,15.5 17.4,15.5 "/></svg></div>'+snapshot.val().name+'</span></div>';
+            }
+
             $('body').append(pointerhtml);
             $('#pointer'+snapshot.val().id).css('background-color',snapshot.val().color);    
             console.log(snapshot.val());
@@ -101,7 +133,7 @@ var multiplayerjs = {
         });
         $(window).focus(function(){
             //back in focus
-            location.reload();
+            //location.reload();
         });
 
     },
