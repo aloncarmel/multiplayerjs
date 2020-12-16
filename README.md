@@ -1,7 +1,7 @@
 # MultiplayerJS
 A Multiplayer JS Library using Firebase to add Figma/Miro like multiplayer experience to any web page in real time
 
-## This library offers a simple js library that you can add to any page to creater a multiplayer like exeprience similar to figma or miro
+## This library offers a simple js library that you can add to any page to create a multiplayer like exeprience similar to figma or miro
 * Using Firebase as the real-time engine to drive the real-time experience (Required to use)
 * Multiplayer exeprience based on unique page url the library is loaded on
 * Multi-cursor on page for each new user joining the page
