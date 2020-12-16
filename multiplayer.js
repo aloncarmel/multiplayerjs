@@ -133,7 +133,7 @@ var multiplayerjs = {
         });
         $(window).focus(function(){
             //back in focus
-            //location.reload();
+            location.reload();
         });
 
     },
